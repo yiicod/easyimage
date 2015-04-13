@@ -1,5 +1,5 @@
-Easyimage with namespace on PSR-4 for Yii1
-==========================================
+easyimage with namespace on PSR-4
+=================================
 You don't need to create many types of thumbnails for images in your project.
 You can create a thumbnail directly in the `View`. Thumbnail will automatically cached. It's easy!
   

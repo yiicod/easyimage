@@ -26,7 +26,17 @@ Yii::import('easyimage.drivers.*');
 class EasyImage extends CApplicationComponent
 {
 
+    /**
+     *
+     * @var type 
+     */
     public $action = '/user/image';
+
+    /**
+     *
+     * @var type 
+     */
+    public $webrootAlias = 'webroot';
 
     /**
      * @var string
@@ -141,9 +151,9 @@ class EasyImage extends CApplicationComponent
         // Publish "retina.js" library (http://retinajs.com/)
         if ($this->retinaSupport) {
             Yii::app()->clientScript->registerScriptFile(
-                    Yii::app()->assetManager->publish(
-                            Yii::getPathOfAlias('easyimage.assets') . '/retina.js'
-                    ), CClientScript::POS_HEAD
+                Yii::app()->assetManager->publish(
+                    Yii::getPathOfAlias('easyimage.assets') . '/retina.js'
+                ), CClientScript::POS_HEAD
             );
         }
     }
@@ -202,7 +212,7 @@ class EasyImage extends CApplicationComponent
             switch ($key) {
                 case 'resize':
                     $this->resize(
-                            isset($value['width']) ? $value['width'] : null, isset($value['height']) ? $value['height'] : null, isset($value['master']) ? $value['master'] : null
+                        isset($value['width']) ? $value['width'] : null, isset($value['height']) ? $value['height'] : null, isset($value['master']) ? $value['master'] : null
                     );
                     break;
                 case 'crop':
@@ -210,7 +220,7 @@ class EasyImage extends CApplicationComponent
                         throw new CException('Params "width" and "height" is required for action "' . $key . '"');
                     }
                     $this->crop(
-                            $value['width'], $value['height'], isset($value['offset_x']) ? $value['offset_x'] : null, isset($value['offset_y']) ? $value['offset_y'] : null
+                        $value['width'], $value['height'], isset($value['offset_x']) ? $value['offset_x'] : null, isset($value['offset_y']) ? $value['offset_y'] : null
                     );
                     break;
                 case 'rotate':
@@ -245,13 +255,13 @@ class EasyImage extends CApplicationComponent
                     break;
                 case 'reflection':
                     $this->reflection(
-                            isset($value['height']) ? $value['height'] : null, isset($value['opacity']) ? $value['opacity'] : 100, isset($value['fade_in']) ? $value['fade_in'] : false
+                        isset($value['height']) ? $value['height'] : null, isset($value['opacity']) ? $value['opacity'] : 100, isset($value['fade_in']) ? $value['fade_in'] : false
                     );
                     break;
                 case 'watermark':
                     if (is_array($value)) {
                         $this->watermark(
-                                isset($value['watermark']) ? $value['watermark'] : null, isset($value['offset_x']) ? $value['offset_x'] : null, isset($value['offset_y']) ? $value['offset_y'] : null, isset($value['opacity']) ? $value['opacity'] : 100
+                            isset($value['watermark']) ? $value['watermark'] : null, isset($value['offset_x']) ? $value['offset_x'] : null, isset($value['offset_y']) ? $value['offset_y'] : null, isset($value['opacity']) ? $value['opacity'] : 100
                         );
                     } else {
                         $this->watermark($value);
@@ -263,7 +273,7 @@ class EasyImage extends CApplicationComponent
                             throw new CException('Param "color" is required for action "' . $key . '"');
                         }
                         $this->background(
-                                $value['color'], isset($value['opacity']) ? $value['opacity'] : 100
+                            $value['color'], isset($value['opacity']) ? $value['opacity'] : 100
                         );
                     } else {
                         $this->background($value);
@@ -294,7 +304,7 @@ class EasyImage extends CApplicationComponent
     {
         try {
             $hash = md5($file . serialize($params));
-            $cachePath = Yii::getpathOfAlias('webroot') . $this->cachePath . $hash{0};
+            $cachePath = Yii::getpathOfAlias($this->webrootAlias) . $this->cachePath . $hash{0};
             $cacheFileExt = isset($params['type']) ? $params['type'] : pathinfo($file, PATHINFO_EXTENSION);
             $cacheFileName = $hash . '.' . $cacheFileExt;
             $cacheFile = $cachePath . DIRECTORY_SEPARATOR . $cacheFileName;
@@ -315,10 +325,10 @@ class EasyImage extends CApplicationComponent
     public function test($file)
     {
         return $this->thumbSrcOf($file, array(
-                    'resize' => array(
-                        'width' => 18,
-                        'height' => 35
-                    )
+                'resize' => array(
+                    'width' => 18,
+                    'height' => 35
+                )
         ));
     }
 
@@ -336,7 +346,7 @@ class EasyImage extends CApplicationComponent
             // Paths
             $hash = md5($file . serialize($params));
 
-            $cachePath = Yii::getpathOfAlias('webroot') . $this->cachePath . $hash{0};
+            $cachePath = Yii::getpathOfAlias($this->webrootAlias) . $this->cachePath . $hash{0};
             $cacheFileExt = isset($params['type']) ? $params['type'] : pathinfo($file, PATHINFO_EXTENSION);
             $cacheFileName = $hash . '.' . $cacheFileExt;
             $cacheFile = $cachePath . DIRECTORY_SEPARATOR . $cacheFileName;
@@ -411,7 +421,7 @@ class EasyImage extends CApplicationComponent
     public function thumbOf($file, $params = array(), $htmlOptions = array())
     {
         return CHtml::image(
-                        $this->getUrl($file, $params), isset($htmlOptions['alt']) ? $htmlOptions['alt'] : '', $htmlOptions
+                $this->getUrl($file, $params), isset($htmlOptions['alt']) ? $htmlOptions['alt'] : '', $htmlOptions
         );
     }
 
@@ -492,7 +502,7 @@ class EasyImage extends CApplicationComponent
         if ($watermark instanceof EasyImage) {
             $watermark = $watermark->image();
         } elseif (is_string($watermark)) {
-            $watermark = Image::factory(Yii::getpathOfAlias('webroot') . $watermark);
+            $watermark = Image::factory(Yii::getpathOfAlias($this->webrootAlias) . $watermark);
         }
         return $this->image()->watermark($watermark, $offset_x, $offset_y, $opacity);
     }
