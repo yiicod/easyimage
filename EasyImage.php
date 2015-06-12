@@ -30,18 +30,7 @@ class EasyImage extends CApplicationComponent
      *
      * @var type 
      */
-    public $action = '/user/image';
-
-    /**
-     *
-     * @var type 
-     */
     public $webrootAlias = 'webroot';
-
-    /**
-     * @var string
-     */
-    public $password = '123321';
 
     /**
      * Resizing directions
@@ -308,18 +297,30 @@ class EasyImage extends CApplicationComponent
             $cacheFileExt = isset($params['type']) ? $params['type'] : pathinfo($file, PATHINFO_EXTENSION);
             $cacheFileName = $hash . '.' . $cacheFileExt;
             $cacheFile = $cachePath . DIRECTORY_SEPARATOR . $cacheFileName;
-            $webCacheFile = Yii::app()->baseUrl . $this->cachePath . $hash{0} . '/' . $cacheFileName;
+            $absolute = isset($params['absoluteUrl']) && $params['absoluteUrl'] == true;
+            $webCacheFile = rtrim(Yii::app()->getBaseUrl($absolute), '/') . $this->cachePath . $hash{0} . '/' . $cacheFileName;
 
             // Return URL to the cache image
             if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $this->cacheTime)) {
                 return $webCacheFile;
             } else {
-                $link = mcrypt_encrypt(MCRYPT_3DES, $this->password, serialize(array('f' => $file, 'p' => $params)), MCRYPT_MODE_ECB);
-                return Yii::app()->createAbsoluteUrl($this->action, array('params' => urlencode($link)));
+                $webCacheFile = @$this->thumbSrcOf($file, $params);
+                if (empty($webCacheFile)) {
+                    return $this->emptyImage();
+                }
+                return $webCacheFile;
             }
         } catch (Exception $e) {
             return '';
         }
+    }
+
+    /**
+     * Renders empty image
+     */
+    private function emptyImage()
+    {
+        echo 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
     }
 
     public function test($file)
@@ -350,7 +351,11 @@ class EasyImage extends CApplicationComponent
             $cacheFileExt = isset($params['type']) ? $params['type'] : pathinfo($file, PATHINFO_EXTENSION);
             $cacheFileName = $hash . '.' . $cacheFileExt;
             $cacheFile = $cachePath . DIRECTORY_SEPARATOR . $cacheFileName;
-            $webCacheFile = Yii::app()->baseUrl . $this->cachePath . $hash{0} . '/' . $cacheFileName;
+            $absolute = isset($params['absoluteUrl']) && $params['absoluteUrl'] == true;
+            $webCacheFile = rtrim(Yii::app()->getBaseUrl($absolute), '/') . $this->cachePath . $hash{0} . '/' . $cacheFileName;
+
+            // Clear fake params
+            unset($params['absoluteUrl']);
 
             // Return URL to the cache image
             if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $this->cacheTime)) {

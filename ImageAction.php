@@ -8,6 +8,7 @@ use Yii;
 
 /**
  * Class ImageAction
+ * @deprecated since version 0.2.5
  */
 class ImageAction extends CAction
 {
