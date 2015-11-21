@@ -408,7 +408,7 @@ class EasyImage extends CApplicationComponent
                 );
             }
         } catch (Exception $e) {
-            Yii::log($e->getMessage());
+            Yii::log($e->getMessage(), \CLogger::LEVEL_ERROR, 'easyimage');
             return '';
         }
     }
