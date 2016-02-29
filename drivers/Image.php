@@ -3,15 +3,14 @@
 /**
  * Image manipulation support. Allows images to be resized, cropped, etc.
  *
- * @package        Kohana/Image
  * @category       Base
+ *
  * @author         Kohana Team
  * @copyright  (c) 2008-2009 Kohana Team
  * @license        http://kohanaphp.com/license.html
  */
 class Image
 {
-
     // Resizing constraints
     const NONE = 0x01;
     const WIDTH = 0x02;
@@ -25,7 +24,7 @@ class Image
     const VERTICAL = 0x12;
 
     /**
-     * @var  string  default driver: GD, ImageMagick, etc
+     * @var string default driver: GD, ImageMagick, etc
      */
     public static $default_driver = 'GD';
 
@@ -37,46 +36,48 @@ class Image
      *
      *     $image = Image::factory('upload/test.jpg');
      *
-     * @param   string $file   image file path
-     * @param   string $driver driver type: GD, ImageMagick, etc
+     * @param string $file   image file path
+     * @param string $driver driver type: GD, ImageMagick, etc
      *
-     * @return  Image
+     * @return Image
+     *
      * @uses    Image::$default_driver
      */
     public static function factory($file, $driver = null)
     {
         if ($driver === null) {
             // Use the default driver
-            $driver = Image::$default_driver;
+            $driver = self::$default_driver;
         }
 
         // Set the class name
-        $class = 'Image_' . $driver;
+        $class = 'Image_'.$driver;
+
         return new $class($file);
     }
 
     /**
-     * @var  string  image file path
+     * @var string image file path
      */
     public $file;
 
     /**
-     * @var  integer  image width
+     * @var int image width
      */
     public $width;
 
     /**
-     * @var  integer  image height
+     * @var int image height
      */
     public $height;
 
     /**
-     * @var  integer  one of the IMAGETYPE_* constants
+     * @var int one of the IMAGETYPE_* constants
      */
     public $type;
 
     /**
-     * @var  string  mime type of the image
+     * @var string mime type of the image
      */
     public $mime;
 
@@ -84,9 +85,10 @@ class Image
      * Loads information about the image. Will throw an exception if the image
      * does not exist or is not an image.
      *
-     * @param   string $file image file path
+     * @param string $file image file path
      *
      * @throws CException
+     *
      * @return \Image
      */
     public function __construct($file)
@@ -101,8 +103,8 @@ class Image
             // Ignore all errors while reading the image
         }
 
-        if (empty($file) OR empty($info)) {
-            throw new CException('Not an image or invalid image: ' . $file);
+        if (empty($file) or empty($info)) {
+            throw new CException('Not an image or invalid image: '.$file);
         }
 
         // Store the image information
@@ -121,7 +123,7 @@ class Image
      * [!!] The output of this function is binary and must be rendered with the
      * appropriate Content-Type header or it will not be displayed correctly!
      *
-     * @return  string
+     * @return string
      */
     public function __toString()
     {
@@ -153,73 +155,74 @@ class Image
      *     // Resize to 200x500 pixels, ignoring aspect ratio
      *     $image->resize(200, 500, Image::NONE);
      *
-     * @param   integer $width  new width
-     * @param   integer $height new height
-     * @param   integer $master master dimension
+     * @param int $width  new width
+     * @param int $height new height
+     * @param int $master master dimension
      *
-     * @return  $this
+     * @return $this
+     *
      * @uses    Image::_do_resize
      */
     public function resize($width = null, $height = null, $master = null)
     {
         if ($master === null) {
             // Choose the master dimension automatically
-            $master = Image::AUTO;
+            $master = self::AUTO;
         } // Image::WIDTH and Image::HEIGHT deprecated. You can use it in old projects,
         // but in new you must pass empty value for non-master dimension
-        elseif ($master == Image::WIDTH AND !empty($width)) {
-            $master = Image::AUTO;
+        elseif ($master == self::WIDTH and !empty($width)) {
+            $master = self::AUTO;
 
             // Set empty height for backward compatibility
             $height = null;
-        } elseif ($master == Image::HEIGHT AND !empty($height)) {
-            $master = Image::AUTO;
+        } elseif ($master == self::HEIGHT and !empty($height)) {
+            $master = self::AUTO;
 
             // Set empty width for backward compatibility
             $width = null;
         }
 
         if (empty($width)) {
-            if ($master === Image::NONE) {
+            if ($master === self::NONE) {
                 // Use the current width
                 $width = $this->width;
             } else {
                 // If width not set, master will be height
-                $master = Image::HEIGHT;
+                $master = self::HEIGHT;
             }
         }
 
         if (empty($height)) {
-            if ($master === Image::NONE) {
+            if ($master === self::NONE) {
                 // Use the current height
                 $height = $this->height;
             } else {
                 // If height not set, master will be width
-                $master = Image::WIDTH;
+                $master = self::WIDTH;
             }
         }
 
         switch ($master) {
-            case Image::AUTO:
+            case self::AUTO:
                 // Choose direction with the greatest reduction ratio
-                $master = ($this->width / $width) > ($this->height / $height) ? Image::WIDTH : Image::HEIGHT;
+                $master = ($this->width / $width) > ($this->height / $height) ? self::WIDTH : self::HEIGHT;
                 break;
-            case Image::INVERSE:
+            case self::INVERSE:
                 // Choose direction with the minimum reduction ratio
-                $master = ($this->width / $width) > ($this->height / $height) ? Image::HEIGHT : Image::WIDTH;
+                $master = ($this->width / $width) > ($this->height / $height) ? self::HEIGHT : self::WIDTH;
                 break;
         }
 
         switch ($master) {
-            case Image::WIDTH:
+            case self::WIDTH:
                 // Recalculate the height based on the width proportions
                 $height = $this->height * $width / $this->width;
                 break;
-            case Image::HEIGHT:
+            case self::HEIGHT:
                 // Recalculate the width based on the height proportions
                 $width = $this->width * $height / $this->height;
                 break;
-            case Image::PRECISE:
+            case self::PRECISE:
                 // Resize to precise size
                 $ratio = $this->width / $this->height;
 
@@ -250,12 +253,13 @@ class Image
      *     // Crop the image to 200x200 pixels, from the center
      *     $image->crop(200, 200);
      *
-     * @param   integer $width    new width
-     * @param   integer $height   new height
-     * @param   mixed   $offset_x offset from the left
-     * @param   mixed   $offset_y offset from the top
+     * @param int   $width    new width
+     * @param int   $height   new height
+     * @param mixed $offset_x offset from the left
+     * @param mixed $offset_y offset from the top
      *
-     * @return  $this
+     * @return $this
+     *
      * @uses    Image::_do_crop
      */
     public function crop($width, $height, $offset_x = null, $offset_y = null)
@@ -320,15 +324,16 @@ class Image
      *     // Rotate 90% counter-clockwise
      *     $image->rotate(-90);
      *
-     * @param   integer $degrees degrees to rotate: -360-360
+     * @param int $degrees degrees to rotate: -360-360
      *
-     * @return  $this
+     * @return $this
+     *
      * @uses    Image::_do_rotate
      */
     public function rotate($degrees)
     {
         // Make the degrees an integer
-        $degrees = (int)$degrees;
+        $degrees = (int) $degrees;
 
         if ($degrees > 180) {
             do {
@@ -358,16 +363,17 @@ class Image
      *     // Flip the image from left to right
      *     $image->flip(Image::VERTICAL);
      *
-     * @param   integer $direction direction: Image::HORIZONTAL, Image::VERTICAL
+     * @param int $direction direction: Image::HORIZONTAL, Image::VERTICAL
      *
-     * @return  $this
+     * @return $this
+     *
      * @uses    Image::_do_flip
      */
     public function flip($direction)
     {
-        if ($direction !== Image::HORIZONTAL) {
+        if ($direction !== self::HORIZONTAL) {
             // Flip vertically
-            $direction = Image::VERTICAL;
+            $direction = self::VERTICAL;
         }
 
         $this->_do_flip($direction);
@@ -381,9 +387,10 @@ class Image
      *     // Sharpen the image by 20%
      *     $image->sharpen(20);
      *
-     * @param   integer $amount amount to sharpen: 1-100
+     * @param int $amount amount to sharpen: 1-100
      *
-     * @return  $this
+     * @return $this
+     *
      * @uses    Image::_do_sharpen
      */
     public function sharpen($amount)
@@ -413,16 +420,17 @@ class Image
      * [!!] By default, the reflection will be go from transparent at the top
      * to opaque at the bottom.
      *
-     * @param   integer $height  reflection height
-     * @param   integer $opacity reflection opacity: 0-100
-     * @param   boolean $fade_in TRUE to fade in, FALSE to fade out
+     * @param int  $height  reflection height
+     * @param int  $opacity reflection opacity: 0-100
+     * @param bool $fade_in TRUE to fade in, FALSE to fade out
      *
-     * @return  $this
+     * @return $this
+     *
      * @uses    Image::_do_reflection
      */
     public function reflection($height = null, $opacity = 100, $fade_in = false)
     {
-        if ($height === null OR $height > $this->height) {
+        if ($height === null or $height > $this->height) {
             // Use the current height
             $height = $this->height;
         }
@@ -446,12 +454,13 @@ class Image
      *     $mark = Image::factory('upload/watermark.png');
      *     $image->watermark($mark, TRUE, TRUE);
      *
-     * @param   Image   $watermark watermark Image instance
-     * @param   integer $offset_x  offset from the left
-     * @param   integer $offset_y  offset from the top
-     * @param   integer $opacity   opacity of watermark: 1-100
+     * @param Image $watermark watermark Image instance
+     * @param int   $offset_x  offset from the left
+     * @param int   $offset_y  offset from the top
+     * @param int   $opacity   opacity of watermark: 1-100
      *
-     * @return  $this
+     * @return $this
+     *
      * @uses    Image::_do_watermark
      */
     public function watermark($watermark, $offset_x = null, $offset_y = null, $opacity = 100)
@@ -496,10 +505,11 @@ class Image
      *     // Make the image background black with 50% opacity
      *     $image->background('#000', 50);
      *
-     * @param   string  $color   hexadecimal color value
-     * @param   integer $opacity background opacity: 0-100
+     * @param string $color   hexadecimal color value
+     * @param int    $opacity background opacity: 0-100
      *
-     * @return  $this
+     * @return $this
+     *
      * @uses    Image::_do_background
      */
     public function background($color, $opacity = 100)
@@ -515,7 +525,7 @@ class Image
         }
 
         // Convert the hex into RGB values
-        list ($r, $g, $b) = array_map('hexdec', str_split($color, 2));
+        list($r, $g, $b) = array_map('hexdec', str_split($color, 2));
 
         // The opacity must be in the range of 0 to 100
         $opacity = min(max($opacity, 0), 100);
@@ -540,12 +550,14 @@ class Image
      * [!!] If the file does not exist, and the directory is not writable, an
      * exception will be thrown.
      *
-     * @param   string  $file    new image path
-     * @param   integer $quality quality of image: 1-100
+     * @param string $file    new image path
+     * @param int    $quality quality of image: 1-100
      *
-     * @return  boolean
+     * @return bool
+     *
      * @uses    Image::_save
-     * @throws  CException
+     *
+     * @throws CException
      */
     public function save($file = null, $quality = 100)
     {
@@ -556,14 +568,14 @@ class Image
 
         if (is_file($file)) {
             if (!is_writable($file)) {
-                throw new CException('File must be writable: ' . $file);
+                throw new CException('File must be writable: '.$file);
             }
         } else {
             // Get the directory of the file
             $directory = realpath(pathinfo($file, PATHINFO_DIRNAME));
 
-            if (!is_dir($directory) OR !is_writable($directory)) {
-                throw new CException('Directory must be writable: ' . $directory);
+            if (!is_dir($directory) or !is_writable($directory)) {
+                throw new CException('Directory must be writable: '.$directory);
             }
         }
 
@@ -582,10 +594,11 @@ class Image
      *     // Render the image as a PNG
      *     $data = $image->render('png');
      *
-     * @param   string  $type    image type to return: png, jpg, gif, etc
-     * @param   integer $quality quality of image: 1-100
+     * @param string $type    image type to return: png, jpg, gif, etc
+     * @param int    $quality quality of image: 1-100
      *
-     * @return  string
+     * @return string
+     *
      * @uses    Image::_do_render
      */
     public function render($type = null, $quality = 100)
@@ -597,5 +610,5 @@ class Image
 
         return $this->_do_render($type, $quality);
     }
-
 } // End Image
+

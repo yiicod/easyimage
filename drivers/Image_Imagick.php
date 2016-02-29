@@ -3,25 +3,25 @@
 /**
  * Support for image manipulation using [Imagick](http://php.net/Imagick).
  *
- * @package        Kohana/Image
  * @category       Drivers
+ *
  * @author         Tamas Mihalik tamas.mihalik@gmail.com
  * @copyright  (c) 2009-2012 Kohana Team
  * @license        http://kohanaphp.com/license.html
  */
 class Image_Imagick extends Image
 {
-
     /**
-     * @var  Imagick  image magick object
+     * @var Imagick image magick object
      */
     protected $im;
 
     /**
      * Checks if ImageMagick is enabled.
      *
-     * @throws  CException
-     * @return  boolean
+     * @throws CException
+     *
+     * @return bool
      */
     public static function check()
     {
@@ -29,7 +29,7 @@ class Image_Imagick extends Image
             throw new CException('Imagick is not installed, or the extension is not loaded');
         }
 
-        return Image_Imagick::$_checked = true;
+        return self::$_checked = true;
     }
 
     /**
@@ -41,14 +41,14 @@ class Image_Imagick extends Image
      */
     public function __construct($file)
     {
-        if (!Image_Imagick::$_checked) {
+        if (!self::$_checked) {
             // Run the install check
-            Image_Imagick::check();
+            self::check();
         }
 
         parent::__construct($file);
 
-        $this->im = new Imagick;
+        $this->im = new Imagick();
         $this->im->readImage($file);
 
         if (!$this->im->getImageAlphaChannel()) {
@@ -59,8 +59,6 @@ class Image_Imagick extends Image
 
     /**
      * Destroys the loaded image to free up resources.
-     *
-     * @return  void
      */
     public function __destruct()
     {
@@ -144,7 +142,7 @@ class Image_Imagick extends Image
         $reflection->setImagePage($this->width, $height, 0, 0);
 
         // Select the fade direction
-        $direction = array('transparent', 'black');
+        $direction = ['transparent', 'black'];
 
         if ($fade_in) {
             // Change the direction of the fade
@@ -152,7 +150,7 @@ class Image_Imagick extends Image
         }
 
         // Create a gradient for fading
-        $fade = new Imagick;
+        $fade = new Imagick();
         $fade->newPseudoImage($reflection->getImageWidth(), $reflection->getImageHeight(), vsprintf('gradient:%s-%s', $direction));
 
         // Apply the fade alpha channel to the reflection
@@ -162,8 +160,8 @@ class Image_Imagick extends Image
         $reflection->evaluateImage(Imagick::EVALUATE_MULTIPLY, $opacity / 100, Imagick::CHANNEL_ALPHA);
 
         // Create a new container to hold the image and reflection
-        $image = new Imagick;
-        $image->newImage($this->width, $this->height + $height, new ImagickPixel);
+        $image = new Imagick();
+        $image->newImage($this->width, $this->height + $height, new ImagickPixel());
 
         // Force the image to have an alpha channel
         $image->setImageAlphaChannel(Imagick::ALPHACHANNEL_SET);
@@ -176,7 +174,7 @@ class Image_Imagick extends Image
 
         // Place the image and reflection into the container
         if ($image->compositeImage($this->im, Imagick::COMPOSITE_SRC, 0, 0)
-            AND $image->compositeImage($reflection, Imagick::COMPOSITE_OVER, 0, $this->height)
+            and $image->compositeImage($reflection, Imagick::COMPOSITE_OVER, 0, $this->height)
         ) {
             // Replace the current image with the reflected image
             $this->im = $image;
@@ -194,7 +192,7 @@ class Image_Imagick extends Image
     protected function _do_watermark($image, $offset_x, $offset_y, $opacity)
     {
         // Convert the Image intance into an Imagick instance
-        $watermark = new Imagick;
+        $watermark = new Imagick();
         $watermark->readImageBlob($image->render(), $image->file);
 
         if ($watermark->getImageAlphaChannel() !== Imagick::ALPHACHANNEL_ACTIVATE) {
@@ -220,7 +218,7 @@ class Image_Imagick extends Image
         $color = sprintf('rgb(%d, %d, %d)', $r, $g, $b);
 
         // Create a new image for the background
-        $background = new Imagick;
+        $background = new Imagick();
         $background->newImage($this->width, $this->height, new ImagickPixel($color));
 
         if (!$background->getImageAlphaChannel()) {
@@ -284,16 +282,17 @@ class Image_Imagick extends Image
         $this->type = $type;
         $this->mime = image_type_to_mime_type($type);
 
-        return (string)$this->im;
+        return (string) $this->im;
     }
 
     /**
      * Get the image type and format for an extension.
      *
-     * @param   string $extension image extension: png, jpg, etc
+     * @param string $extension image extension: png, jpg, etc
      *
-     * @return  string  IMAGETYPE_* constant
-     * @throws  CException
+     * @return string IMAGETYPE_* constant
+     *
+     * @throws CException
      */
     protected function _get_imagetype($extension)
     {
@@ -312,10 +311,10 @@ class Image_Imagick extends Image
                 $type = IMAGETYPE_PNG;
                 break;
             default:
-                throw new CException('Installed ImageMagick does not support ' . $extension . ' images');
+                throw new CException('Installed ImageMagick does not support '.$extension.' images');
                 break;
         }
 
-        return array($format, $type);
+        return [$format, $type];
     }
 } // End Image_Imagick

@@ -3,15 +3,14 @@
 /**
  * Support for image manipulation using [GD](http://php.net/GD).
  *
- * @package        Kohana/Image
  * @category       Drivers
+ *
  * @author         Kohana Team
  * @copyright  (c) 2008-2009 Kohana Team
  * @license        http://kohanaphp.com/license.html
  */
 class Image_GD extends Image
 {
-
     // Is GD bundled or separate?
     protected static $_bundled;
 
@@ -21,7 +20,8 @@ class Image_GD extends Image
      * not bundled.
      *
      * @throws CException
-     * @return  boolean
+     *
+     * @return bool
      */
     public static function check()
     {
@@ -31,13 +31,13 @@ class Image_GD extends Image
 
         if (defined('GD_BUNDLED')) {
             // Get the version via a constant, available in PHP 5.
-            Image_GD::$_bundled = GD_BUNDLED;
+            self::$_bundled = GD_BUNDLED;
         } else {
             // Get the version information
             $info = gd_info();
 
             // Extract the bundled status
-            Image_GD::$_bundled = (bool)preg_match('/\bbundled\b/i', $info['GD Version']);
+            self::$_bundled = (bool) preg_match('/\bbundled\b/i', $info['GD Version']);
         }
 
         if (defined('GD_VERSION')) {
@@ -55,10 +55,10 @@ class Image_GD extends Image
         }
 
         if (!version_compare($version, '2.0.1', '>=')) {
-            throw new CException('Image_GD requires GD version 2.0.1 or greater, you have ' . $version);
+            throw new CException('Image_GD requires GD version 2.0.1 or greater, you have '.$version);
         }
 
-        return Image_GD::$_checked = true;
+        return self::$_checked = true;
     }
 
     // Temporary image resource
@@ -70,16 +70,17 @@ class Image_GD extends Image
     /**
      * Runs [Image_GD::check] and loads the image.
      *
-     * @param   string $file image file path
+     * @param string $file image file path
      *
      * @throws CException
+     *
      * @return \Image_GD
      */
     public function __construct($file)
     {
-        if (!Image_GD::$_checked) {
+        if (!self::$_checked) {
             // Run the install check
-            Image_GD::check();
+            self::check();
         }
 
         parent::__construct($file);
@@ -97,8 +98,8 @@ class Image_GD extends Image
                 break;
         }
 
-        if (!isset($create) OR !function_exists($create)) {
-            throw new CException('Installed GD does not support ' . image_type_to_extension($this->type, false) . ' images');
+        if (!isset($create) or !function_exists($create)) {
+            throw new CException('Installed GD does not support '.image_type_to_extension($this->type, false).' images');
         }
 
         // Save function for future use
@@ -110,8 +111,6 @@ class Image_GD extends Image
 
     /**
      * Destroys the loaded image to free up resources.
-     *
-     * @return  void
      */
     public function __destruct()
     {
@@ -124,7 +123,6 @@ class Image_GD extends Image
     /**
      * Loads an image into GD.
      *
-     * @return  void
      * @throws CException
      */
     protected function _load_image()
@@ -147,10 +145,8 @@ class Image_GD extends Image
     /**
      * Execute a resize.
      *
-     * @param   integer $width  new width
-     * @param   integer $height new height
-     *
-     * @return  void
+     * @param int $width  new width
+     * @param int $height new height
      */
     protected function _do_resize($width, $height)
     {
@@ -162,12 +158,12 @@ class Image_GD extends Image
         $this->_load_image();
 
         // Test if we can do a resize without resampling to speed up the final resize
-        if ($width > ($this->width / 2) AND $height > ($this->height / 2)) {
+        if ($width > ($this->width / 2) and $height > ($this->height / 2)) {
             // The maximum reduction is 10% greater than the final size
             $reduction_width = round($width * 1.1);
             $reduction_height = round($height * 1.1);
 
-            while ($pre_width / 2 > $reduction_width AND $pre_height / 2 > $reduction_height) {
+            while ($pre_width / 2 > $reduction_width and $pre_height / 2 > $reduction_height) {
                 // Reduce the size using an O(2n) algorithm, until it reaches the maximum reduction
                 $pre_width /= 2;
                 $pre_height /= 2;
@@ -201,12 +197,10 @@ class Image_GD extends Image
     /**
      * Execute a crop.
      *
-     * @param   integer $width    new width
-     * @param   integer $height   new height
-     * @param   integer $offset_x offset from the left
-     * @param   integer $offset_y offset from the top
-     *
-     * @return  void
+     * @param int $width    new width
+     * @param int $height   new height
+     * @param int $offset_x offset from the left
+     * @param int $offset_y offset from the top
      */
     protected function _do_crop($width, $height, $offset_x, $offset_y)
     {
@@ -231,14 +225,13 @@ class Image_GD extends Image
     /**
      * Execute a rotation.
      *
-     * @param   integer $degrees degrees to rotate
+     * @param int $degrees degrees to rotate
      *
      * @throws CException
-     * @return  void
      */
     protected function _do_rotate($degrees)
     {
-        if (!Image_GD::$_bundled) {
+        if (!self::$_bundled) {
             throw new CException('This method requires imagerotate, which is only available in the bundled version of GD');
         }
 
@@ -272,9 +265,7 @@ class Image_GD extends Image
     /**
      * Execute a flip.
      *
-     * @param   integer $direction direction to flip
-     *
-     * @return  void
+     * @param int $direction direction to flip
      */
     protected function _do_flip($direction)
     {
@@ -285,12 +276,12 @@ class Image_GD extends Image
         $this->_load_image();
 
         if ($direction === Image::HORIZONTAL) {
-            for ($x = 0; $x < $this->width; $x++) {
+            for ($x = 0; $x < $this->width; ++$x) {
                 // Flip each row from top to bottom
                 imagecopy($flipped, $this->_image, $x, 0, $this->width - $x - 1, 0, 1, $this->height);
             }
         } else {
-            for ($y = 0; $y < $this->height; $y++) {
+            for ($y = 0; $y < $this->height; ++$y) {
                 // Flip each column from left to right
                 imagecopy($flipped, $this->_image, 0, $y, 0, $this->height - $y - 1, $this->width, 1);
             }
@@ -308,14 +299,13 @@ class Image_GD extends Image
     /**
      * Execute a sharpen.
      *
-     * @param   integer $amount amount to sharpen
+     * @param int $amount amount to sharpen
      *
      * @throws CException
-     * @return  void
      */
     protected function _do_sharpen($amount)
     {
-        if (!Image_GD::$_bundled) {
+        if (!self::$_bundled) {
             throw new CException('This method requires imageconvolution, which is only available in the bundled version of GD');
         }
 
@@ -326,12 +316,11 @@ class Image_GD extends Image
         $amount = round(abs(-18 + ($amount * 0.08)), 2);
 
         // Gaussian blur matrix
-        $matrix = array
-        (
-            array(-1, -1, -1),
-            array(-1, $amount, -1),
-            array(-1, -1, -1),
-        );
+        $matrix = [
+            [-1, -1, -1],
+            [-1, $amount, -1],
+            [-1, -1, -1],
+        ];
 
         // Perform the sharpen
         if (imageconvolution($this->_image, $matrix, $amount - 8, 0)) {
@@ -344,16 +333,15 @@ class Image_GD extends Image
     /**
      * Execute a reflection.
      *
-     * @param   integer $height  reflection height
-     * @param   integer $opacity reflection opacity
-     * @param   boolean $fade_in TRUE to fade out, FALSE to fade in
+     * @param int  $height  reflection height
+     * @param int  $opacity reflection opacity
+     * @param bool $fade_in TRUE to fade out, FALSE to fade in
      *
      * @throws CException
-     * @return  void
      */
     protected function _do_reflection($height, $opacity, $fade_in)
     {
-        if (!Image_GD::$_bundled) {
+        if (!self::$_bundled) {
             throw new CException('This method requires imagefilter, which is only available in the bundled version of GD');
         }
 
@@ -377,7 +365,7 @@ class Image_GD extends Image
         // Copy the image to the reflection
         imagecopy($reflection, $this->_image, 0, 0, 0, 0, $this->width, $this->height);
 
-        for ($offset = 0; $height >= $offset; $offset++) {
+        for ($offset = 0; $height >= $offset; ++$offset) {
             // Read the next line down
             $src_y = $this->height - $offset - 1;
 
@@ -417,18 +405,18 @@ class Image_GD extends Image
     /**
      * Execute a watermarking.
      *
-     * @param           $watermark
-     * @param   integer $offset_x offset from the left
-     * @param   integer $offset_y offset from the top
-     * @param   integer $opacity  opacity of watermark
+     * @param     $watermark
+     * @param int $offset_x  offset from the left
+     * @param int $offset_y  offset from the top
+     * @param int $opacity   opacity of watermark
      *
      * @throws CException
+     *
      * @internal param \Image $image watermarking Image
-     * @return  void
      */
     protected function _do_watermark($watermark, $offset_x, $offset_y, $opacity)
     {
-        if (!Image_GD::$_bundled) {
+        if (!self::$_bundled) {
             throw new CException('This method requires imagelayereffect, which is only available in the bundled version of GD');
         }
 
@@ -470,12 +458,10 @@ class Image_GD extends Image
     /**
      * Execute a background.
      *
-     * @param   integer $r       red
-     * @param   integer $g       green
-     * @param   integer $b       blue
-     * @param   integer $opacity opacity
-     *
-     * @return void
+     * @param int $r       red
+     * @param int $g       green
+     * @param int $b       blue
+     * @param int $opacity opacity
      */
     protected function _do_background($r, $g, $b, $opacity)
     {
@@ -508,10 +494,10 @@ class Image_GD extends Image
     /**
      * Execute a save.
      *
-     * @param   string  $file    new image filename
-     * @param   integer $quality quality
+     * @param string $file    new image filename
+     * @param int    $quality quality
      *
-     * @return  boolean
+     * @return bool
      */
     protected function _do_save($file, $quality)
     {
@@ -527,7 +513,7 @@ class Image_GD extends Image
         // Save the image to a file
         $status = isset($quality) ? $save($this->_image, $file, $quality) : $save($this->_image, $file);
 
-        if ($status === true AND $type !== $this->type) {
+        if ($status === true and $type !== $this->type) {
             // Reset the image type and mime type
             $this->type = $type;
             $this->mime = image_type_to_mime_type($type);
@@ -539,10 +525,10 @@ class Image_GD extends Image
     /**
      * Execute a render.
      *
-     * @param   string  $type    image type: png, jpg, gif, etc
-     * @param   integer $quality quality
+     * @param string $type    image type: png, jpg, gif, etc
+     * @param int    $quality quality
      *
-     * @return  string
+     * @return string
      */
     protected function _do_render($type, $quality)
     {
@@ -558,7 +544,7 @@ class Image_GD extends Image
         // Render the image
         $status = isset($quality) ? $save($this->_image, null, $quality) : $save($this->_image, null);
 
-        if ($status === true AND $type !== $this->type) {
+        if ($status === true and $type !== $this->type) {
             // Reset the image type and mime type
             $this->type = $type;
             $this->mime = image_type_to_mime_type($type);
@@ -569,15 +555,16 @@ class Image_GD extends Image
 
     /**
      * Get the GD saving function and image type for this extension.
-     * Also normalizes the quality setting
+     * Also normalizes the quality setting.
      *
-     * @param   string  $extension image type: png, jpg, etc
-     * @param   integer $quality   image quality
+     * @param string $extension image type: png, jpg, etc
+     * @param int    $quality   image quality
      *
      * @throws CException
-     * @return  array    save function, IMAGETYPE_* constant
+     *
+     * @return array save function, IMAGETYPE_* constant
      */
-    protected function _save_function($extension, & $quality)
+    protected function _save_function($extension, &$quality)
     {
         if (!$extension) {
             // Use the current image type
@@ -608,20 +595,20 @@ class Image_GD extends Image
                 $quality = 9;
                 break;
             default:
-                throw new CException('Installed GD does not support ' . $extension . ' images');
+                throw new CException('Installed GD does not support '.$extension.' images');
                 break;
         }
 
-        return array($save, $type);
+        return [$save, $type];
     }
 
     /**
      * Create an empty image with the given width and height.
      *
-     * @param   integer $width  image width
-     * @param   integer $height image height
+     * @param int $width  image width
+     * @param int $height image height
      *
-     * @return  resource
+     * @return resource
      */
     protected function _create($width, $height)
     {
@@ -636,5 +623,5 @@ class Image_GD extends Image
 
         return $image;
     }
-
 } // End Image_GD
+
